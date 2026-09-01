@@ -59,11 +59,11 @@ Rules:
 
 Each agent MUST determine and document the target environment for the ticket:
 
-1. **Env**: `testing` (aus-testing / admin.testing.tapinsure.io) vs `staging` vs `production`
+1. **Env**: `testing` (${TESTING_ENV_NAME} / ${TESTING_ENV_URL}) vs `staging` vs `production`
 2. **Platform**: where the service runs — `gcp`, `aws`, or elsewhere (from repo configs / deploy manifests / GitLab CI when available)
 
 Then:
-- **If env == testing**: cross-evaluate from the database itself using the `metabase-aus-testing` MCP (read-mode only) via the 9router-gateway. Query to validate/refute hypotheses raised by the Jam + code analysis (e.g. verify premium/permission/row data that drives the bug). Do NOT modify anything.
+- **If env == testing**: cross-evaluate from the database itself using the `metabase-testing` MCP (read-mode only) via the 9router-gateway. Query to validate/refute hypotheses raised by the Jam + code analysis (e.g. verify premium/permission/row data that drives the bug). Do NOT modify anything.
 - **If env == staging or production**: no data MCP is available yet — do NOT attempt DB access. Rely on Jam evidence + code analysis only, and note "no data MCP for this env" in the doc.
 
 Document env + platform + data-validation method (or its absence) in the ticket doc.
@@ -87,7 +87,7 @@ Each child agent MUST complete ALL of the following before stopping:
 1. **Fetch Jam evidence** via the 9router-gateway MCP (`jam__getDetails`, `jam__getConsoleLogs`, `jam__getNetworkRequests` for video Jams; `jam__getScreenshots` for screenshot Jams). Extract: error messages, failing network requests, stack traces, user actions.
 2. **Explore relevant repo(s)** — identify the affected service(s), trace the code path that produces the bug, locate the root cause candidate.
 3. **Check repo availability** — if a required repo is not cloned locally, report which repo is missing and stop; do NOT clone or install anything.
-4. **Write evaluation doc** to `/Users/pid-alvian/Documents/work/gitlab/sprints/INS Sprint X/notes/{YYYYMMDD}-{ticket-id}-{slug}.md` with:
+4. **Write evaluation doc** to `/Users/{user-id}/Documents/work/gitlab/sprints/INS Sprint X/notes/{YYYYMMDD}-{ticket-id}-{slug}.md` with:
    - Ticket ID, summary, priority
    - Jam evidence summary (errors, logs, network failures)
    - Affected service(s) and repo(s)
@@ -135,13 +135,13 @@ Only after the user explicitly confirms ALL assumptions do agents proceed toward
 - **Priority:** P1
 - **Root cause hint:** `ops.view_dashboard` permission missing from user profile
 - **Likely repos:** `operationspanel`, `operationspanel-web`, `core`
-- **Ticket doc:** https://pasarpolis.atlassian.net/browse/INS-268
+- **Ticket doc:** ${JIRA_URL}/browse/INS-268
 
 ### INS-266 — 500 When access notifications page
 - **Jam:** `4fa7bdaf-dd3c-4dd1-b4b4-096143b4d2d8`
 - **Priority:** P1
 - **Likely repos:** `core` (notifications API), `operationspanel-web` (frontend)
-- **Ticket doc:** https://pasarpolis.atlassian.net/browse/INS-266
+- **Ticket doc:** ${JIRA_URL}/browse/INS-266
 
 ### INS-277 — Policy Detail datetime JSON format invalid
 - **Jam:** `9d4a29ac-aeb1-4a8a-935b-7b899f4fe50b`
