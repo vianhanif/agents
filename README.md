@@ -51,7 +51,6 @@ rm ~/.agents          # removes the symlink only
 ## Design principles
 
 - **Delegation gate.** Before any work tool call, the agent matches the task against a table of mandatory delegation scenarios. Match = delegate. No match = ask before proceeding inline.
-- **Session chain.** Every session preserves a chain of ancestor session IDs verbatim. Losing or shortening the chain is a hard violation.
 - **Role-focused sessions.** One goal per session: Planner → Coder → Reviewer → Tester → Analyzer. The only allowed in-session mixing is the test-fix cycle (Tester ↔ Coder).
 - **Pre-flight confirmation.** Before any work tool call on a new task, the agent stops and confirms delegation intent with the user. Imperative wording ("start fix", "go ahead") triggers pre-flight, it doesn't skip it.
 - **Isolated worktrees.** Multi-agent workflows use `.worktrees/{ticket-id}-{short-description}/` to keep each agent's workspace independent.

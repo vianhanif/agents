@@ -52,16 +52,6 @@ If the task matches a **Mandatory delegation scenario**, delegate to a specializ
 
 Every development task uses **role-focused sessions**. Keep each session aligned to one goal; use skill switching within a session only for the test-fix cycle.
 
-**Session chain MUST be preserved — never dummyfied.** When a restart summary is provided at session start, the `Session Chain` field MUST be the first thing extracted and preserved verbatim. Each session appends its own ID to the chain before closing. The chain is the single source of truth for continuity — losing or shortening it breaks traceability.
-
-**Enforcement:** If a restart summary arrives WITHOUT a `Session Chain` field, the agent MUST NOT proceed. Stop and ask the user for the full chain before continuing. Accepting a chainless restart = violation of this hard rule.
-
-**Dummyfying anti-patterns (MUST AVOID):**
-- Starting fresh without carrying the chain forward
-- Shortening the chain to only the current session (dropping ancestors)
-- Accepting a user-provided restart that omits the chain — ask for it
-- "I don't see a chain, proceeding anyway" — STOP, ask
-
 | Session | Role | Purpose | When |
 |---------|------|---------|------|
 | 1 | Planner | Understand and document tasks before any coding | Before any coding |
