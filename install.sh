@@ -1,21 +1,28 @@
 #!/usr/bin/env bash
-# install.sh — symlink this repo into ~/.agents
+# install.sh — move this repo into ~/.agents
 set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET="$HOME/.agents"
 
-# 1. Back up existing ~/.agents if it exists and isn't a symlink
-if [ -e "$TARGET" ] && [ ! -L "$TARGET" ]; then
-  mv "$TARGET" "${TARGET}.bak.$(date +%s)"
+if [ "$REPO_DIR" = "$TARGET" ]; then
+  echo "Already installed at $TARGET."
+else
+  # 1. Back up or remove any existing ~/.agents
+  if [ -L "$TARGET" ]; then
+    rm "$TARGET"
+  elif [ -e "$TARGET" ]; then
+    mv "$TARGET" "${TARGET}.bak.$(date +%s)"
+  fi
+
+  # 2. Move the repo into ~/.agents
+  mv "$REPO_DIR" "$TARGET"
+  echo "Moved repo to $TARGET"
 fi
 
-# 2. Symlink the repo into ~/.agents
-ln -sfn "$REPO_DIR" "$TARGET"
-
-# 3. Create .env if it doesn't exist
-if [ ! -f "$REPO_DIR/.env" ]; then
-  cp "$REPO_DIR/env.template" "$REPO_DIR/.env"
+# 3. Create .env from template if missing
+if [ ! -f "$TARGET/.env" ]; then
+  cp "$TARGET/env.template" "$TARGET/.env"
   echo "Created .env from env.template. Fill in your real secrets."
 fi
 
-echo "Agents repo linked to ~/.agents"
+echo "Done. Agents installed at $TARGET"

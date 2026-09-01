@@ -10,7 +10,7 @@ Drop-in `~/.agents/` for any agent harness (Warp, Claude Code, OpenCode, Hermes,
 - `skills/` — role skills (`planner`, `coder`, `review`, `tester`, `analyzer`), orchestrators (`sprint-bug-orchestrator`, `jira-sprint-orchestrator`, `sprint-review-orchestrator`), and utility skills (`firecrawl-*`, `context7-mcp`, `writer`, `system-wiper`, etc.).
 - `mcp.json` — MCP client config pointing at the 9router-gateway with env-var placeholders.
 - `env.template` — dummy credentials to copy into `.env`.
-- `install.sh` — symlinks the repo into `~/.agents`.
+- `install.sh` — moves the repo into `~/.agents`.
 
 ## Install
 
@@ -20,12 +20,11 @@ cd ~/agents
 ./install.sh
 ```
 
-`install.sh` does three things:
-1. Backs up any existing `~/.agents` (if it's a real directory, not a symlink).
-2. Symlinks the repo into `~/.agents`.
-3. Copies `env.template` to `.env` if missing.
+`install.sh` does two things:
+1. Moves the cloned repo into `~/.agents` (backs up any existing `~/.agents` first).
+2. Creates `~/.agents/.env` from `env.template` if missing.
 
-After install, edit `.env` and fill in real values for:
+After install, edit `~/.agents/.env` and fill in real values for:
 - `ROUTER9_GATEWAY_URL` / `ROUTER9_GATEWAY_KEY` — MCP gateway
 - `JIRA_URL` — your Jira base URL
 - `TESTING_ENV_NAME` / `TESTING_ENV_URL` — testing environment identifiers
@@ -35,16 +34,14 @@ After install, edit `.env` and fill in real values for:
 ## Update
 
 ```bash
-cd ~/agents
+cd ~/.agents
 git pull
 ```
-
-Changes appear in `~/.agents` immediately via the symlink.
 
 ## Uninstall
 
 ```bash
-rm ~/.agents          # removes the symlink only
+rm -rf ~/.agents
 # your ~/.agents.bak.<timestamp> (if any) is untouched
 ```
 
