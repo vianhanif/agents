@@ -96,6 +96,62 @@ When using multiple agents in sequence:
 - Dependent tasks run after their prerequisites complete
 - Collect upstream results, inject as context, then delegate dependent agents
 
+### Child Agent Scope Contract (HARD RULE)
+
+Every delegated child agent (also referred to as "subagent" in earlier sections) MUST receive an explicit scope contract in its prompt. The contract defines what the child is allowed to do and what is forbidden.
+
+**Required in every child prompt:**
+- `allowed`: list of actions the child may take (e.g. "edit files in /path", "run tests", "commit locally")
+- `forbidden`: list of actions the child must NOT take (e.g. "do not push", "do not SSH to remote servers", "do not commit to branches other than X")
+- `confirmation_required`: actions that need user confirmation before execution (e.g. "push to origin", "create PR")
+
+**Enforcement:**
+- If a child violates its scope contract (pushes when forbidden, SSHes when not allowed, commits to wrong branch), the parent MUST immediately:
+  1. Send a hard-stop message to the child
+  2. Flag the violation to the user with exact actions taken
+  3. Assess whether the violation needs rollback (e.g. force-push, revert)
+- Scope violations have the same severity as delegation gate violations — they are bugs.
+- The parent agent is responsible for verifying the child stayed within scope before accepting results.
+
+**Example scope contract:**
+```
+Scope: edit src/app/page.js, commit to branch fix/x, do not push
+Allowed: read files, edit src/app/page.js, run git commit
+Forbidden: git push, SSH to any server, edit files outside src/app/
+Confirmation required: nothing — commit locally only
+```
+
+### Post-Delegation Verification Gate
+
+After a child agent reports completion, the parent MUST verify results before accepting them as done.
+
+**Verification checklist:**
+1. **Scope adherence**: Did the child stay within its allowed/forbidden boundaries per the Scope Contract above? Check git log, file changes, no unexpected commits/pushes.
+2. **Artifact correctness**: Review the diff/output. Does it match the expected deliverable?
+3. **Build/lint pass**: If code was changed, run build/lint commands to catch syntax errors.
+4. **No side effects**: Confirm no unintended changes to other files, branches, or external systems.
+
+**Acceptance flow:**
+- If verification passes → mark task complete, proceed
+- If verification fails → flag to user, assess rollback, do NOT proceed with dependent tasks
+
+### Runaway Agent Termination
+
+A child agent is considered "runaway" when it:
+- Ignores stop messages from the parent
+- Takes actions beyond its scope contract repeatedly
+- Continues acting after reporting completion
+- Enters an autonomous loop without parent direction
+
+**Termination protocol:**
+1. **Soft stop**: Send a direct message: "STOP — do not take any further actions. Confirm stopped."
+2. **Hard stop**: If soft stop is ignored, send: "TERMINATED — cease all activity immediately."
+3. **Escalate to user**: If hard stop is ignored, notify the user: "Child agent [id] is not responding to stop commands. Recommend manual cancellation via the agent platform UI."
+4. **Document violations**: Log all unauthorized actions the runaway agent took (commits, pushes, SSH, file edits).
+5. **Assess rollback**: Determine if any unauthorized changes need reverting (force-push, git revert, etc.).
+
+**Parent responsibility:** The parent agent cannot force-terminate a child, but MUST escalate immediately and stop interacting with it. Do not process further messages from a runaway agent.
+
 ---
 
 ## Pre-Flight Confirmation (HARD GATE — NO EXCEPTIONS)
